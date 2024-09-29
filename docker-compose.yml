@@ -1,0 +1,61 @@
+services:
+  java-app-1:
+    image: springbootdemo
+    networks:
+      - loadbalancing
+    expose:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 200M
+
+  java-app-2:
+    image: springbootdemo
+    networks:
+      - loadbalancing
+    expose:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 200M
+
+  mysql:
+    image: mysql:latest
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: testing
+    networks:
+      - loadbalancing
+    ports:
+      - "3306:3306"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 600M
+
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - java-app-1
+      - java-app-2
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - loadbalancing
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 10M
+
+networks:
+  loadbalancing:
+    driver: bridge
